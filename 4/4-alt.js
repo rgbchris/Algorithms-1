@@ -52,7 +52,7 @@ var adjListRev = makeAdjacencyList(revGraph);
 var adjList    = makeAdjacencyList(graph);
 
 var pass = 0;
-var t = 0;
+var t = 1;
 var s = null;
 var n = parseInt(Object.keys(adjList).sort(function(a,b) { return a - b }).pop());
 var exploredNodes = [];
@@ -62,80 +62,66 @@ var SCCs = {};
 var list;
 
 function findSCCs() {
-  exploredNodes = [];
+  exploredNodes = new Array(n);
 
   list = pass ? adjList : adjListRev;
 
   for (var i = n; i > 0; i--) {
-    if (exploredNodes.indexOf(i) === -1) {
-      s = i;
-      DFS(i);
-      /*
+    if (!exploredNodes[i]) {
       if (pass) {
-        DFS(i, adjList);
-      } else {
-        DFS(i, adjListRev);
+        s = i;
+        SCCs[s] = 0;
       }
-      */
+      DFS(i);
     }
   }
 }
 
 function DFS(i) {
-  exploredNodes.push(i);
+  exploredNodes[i] = true;
 
   if (pass) {
     i = times[i];
 
-    if (SCCs[s] === undefined) {
-      SCCs[s] = 0;
-    } else {
-      if (!SCCs[s]) SCCs[s] = 1;
-      SCCs[s]++;
-    }
-
     if (list[i]) {
       for (var n = 0; n < list[i].length; n++) {
         edge = list[i][n];
-        if (exploredNodes.indexOf(revTimes[edge]) === -1) {
+        if (!exploredNodes[revTimes[edge]]) {
           DFS(revTimes[edge]);
         }
       }
     }
 
-    if (SCCs[s] === 0) { SCCs[s] = 1 }
+    SCCs[s]++;
   } else {
     if (list[i]) {
       for (var n = 0; n < list[i].length; n++) {
         edge = list[i][n];
-        if (exploredNodes.indexOf(edge) === -1) {
+        if (!exploredNodes[edge]) {
           DFS(edge);
         }
       } 
     }
 
-    t++;
     times[t] = i;
     revTimes[i] = t;
+    t++;
   }
+
 }
 
 
 findSCCs();
- // pass++;
- //findSCCs();
-console.timeEnd('time');
+pass++;
+findSCCs();
 
-
-
-/**
 var answer = Object.keys(SCCs).map(function(key) {
     return SCCs[key]
 }).sort(function(a,b) {
     return a - b;
 }).slice(-5).reverse();
 console.log(answer);
-**/
 
+console.timeEnd('time');
 
 
