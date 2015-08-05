@@ -49,36 +49,44 @@ function makeAdjacencyList(graph) {
 console.time('time');
 
 var adjListRev = makeAdjacencyList(revGraph);
-var adjList = makeAdjacencyList(graph);
+var adjList    = makeAdjacencyList(graph);
 
 var pass = 0;
 var t = 0;
 var s = null;
-var n = parseInt(Object.keys(adjList).pop());
+var n = parseInt(Object.keys(adjList).sort(function(a,b) { return a - b }).pop());
 var exploredNodes = [];
 var times = {};
 var revTimes = {};
 var SCCs = {};
+var list;
 
 function findSCCs() {
   exploredNodes = [];
 
+  list = pass ? adjList : adjListRev;
+
   for (var i = n; i > 0; i--) {
     if (exploredNodes.indexOf(i) === -1) {
       s = i;
-      DFS(i, !pass ? adjListRev : adjList);
+      DFS(i);
+      /*
+      if (pass) {
+        DFS(i, adjList);
+      } else {
+        DFS(i, adjListRev);
+      }
+      */
     }
   }
 }
 
-function DFS(i, list) {
+function DFS(i) {
   exploredNodes.push(i);
 
-  i = !pass ? i : times[i];
-
-  var j, edge, n;
-
   if (pass) {
+    i = times[i];
+
     if (SCCs[s] === undefined) {
       SCCs[s] = 0;
     } else {
@@ -87,20 +95,21 @@ function DFS(i, list) {
     }
 
     if (list[i]) {
-      for (n = 0; n < list[i].length; n++) {
+      for (var n = 0; n < list[i].length; n++) {
         edge = list[i][n];
         if (exploredNodes.indexOf(revTimes[edge]) === -1) {
-          DFS(revTimes[edge], list);
+          DFS(revTimes[edge]);
         }
       }
     }
 
+    if (SCCs[s] === 0) { SCCs[s] = 1 }
   } else {
     if (list[i]) {
-      for (n = 0; n < list[i].length; n++) {
+      for (var n = 0; n < list[i].length; n++) {
         edge = list[i][n];
         if (exploredNodes.indexOf(edge) === -1) {
-          DFS(edge, list);
+          DFS(edge);
         }
       } 
     }
@@ -109,23 +118,24 @@ function DFS(i, list) {
     times[t] = i;
     revTimes[i] = t;
   }
-
-  if (SCCs[s] === 0) SCCs[s] = 1;
 }
 
 
 findSCCs();
+ // pass++;
+ //findSCCs();
 console.timeEnd('time');
-// pass++;
-// findSCCs();
-// console.timeEnd('time');
 
 
-// var answer = Object.keys(SCCs).map(function(key) {
-//     return SCCs[key]
-// }).sort(function(a,b) {
-//     return a - b;
-// }).slice(-5).reverse();
-// console.log(answer);
+
+/**
+var answer = Object.keys(SCCs).map(function(key) {
+    return SCCs[key]
+}).sort(function(a,b) {
+    return a - b;
+}).slice(-5).reverse();
+console.log(answer);
+**/
+
 
 
