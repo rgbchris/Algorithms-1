@@ -23,7 +23,7 @@
 
 var fs = require('fs'),
     graph = fs.readFileSync('./SCC.txt').toString().split('\n').map(function(str) {
-      return  str.split(' ').map(Number);
+      return  str.split(' ').filter(Number);
     });
     // test1 // [3,3,3,0,0];
     // test2 // [6,3,2,1,0];
