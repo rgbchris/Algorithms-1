@@ -24,18 +24,46 @@
 // supports deletions, and you'll probably need to maintain some kind of mapping between vertices 
 // and their positions in the heap.
 
-var fs = require('fs'),
-    graph = fs.readFileSync('./test1.txt').toString().split('\n').map(function(str) {
-      console.log(str);
-      // return str.split(' ').map(Number);
-    });
 
-    // test1...
-    // output:
-    // 1 0 []
-    // 2 3 [2]
-    // 3 3 [3]
-    // 4 5 [2, 4]
+var fs = require('fs');
 
-var verticesProcessed = [];
-var shortestPathDistance = [];
+var list = {};
+fs.readFileSync('./dijkstraData.txt').toString().split('\n').map(function(str) {
+  if (!str) return;
+  var key = str.split('\t')[0];
+  list[key] = str.split('\t').splice(1).map(function(str, indx, arr) { 
+    if (indx === arr.length-1) return;
+    return str.split(',').map(Number);
+  }).filter(Boolean);
+});
+
+
+console.time('time');
+// Starting node
+var s = Object.keys(list).map(Number).shift();
+// Number of vertices
+var n = Object.keys(list).map(Number).pop();
+// vertices processed so far
+var x = new Array(n);
+// computed shortest path distances
+var a = {};
+
+a[s] = 0;
+
+// current vertex
+var i = s;
+
+// (n-1) iterations (terminate when all vertices processed)
+while (i <= n) {
+  list[i].forEach(function(pair, indx) {
+      var foo = a[pair[0]];
+      var bar = (!!a[i] ? a[i] : 0) + list[i][indx][1];
+      a[pair[0]] = foo <= bar ? foo : bar;
+  });
+  i++;
+}
+
+console.timeEnd('time');
+console.log(a[7] + ',' + a[37] + ',' + a[59] + ',' + a[82] + ',' + a[99] + ',' + a[115] + ',' + a[133] + ',' + a[165] + ',' + a[188] + ',' + a[197]);
+
+
