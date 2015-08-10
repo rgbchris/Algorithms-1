@@ -27,46 +27,67 @@
 
 var fs = require('fs');
 
-var list = {};
-fs.readFileSync('./dijkstraData.txt').toString().split('\n').map(function(str) {
+var list = fs.readFileSync('./test1.txt').toString().split('\n').map(function(str) {
   if (!str) return;
-  var key = str.split('\t')[0];
-  list[key] = str.split('\t').splice(1).map(function(str, indx, arr) { 
+  // var key = str.split('\t')[0];
+  return str.split('\t').splice(1).map(function(str, indx, arr) { 
     if (indx === arr.length-1) return;
     return str.split(',').map(Number);
   }).filter(Boolean);
+
+  // console.log(str.split('\t').splice(1).slice(0,-1));
 });
 
+function extractMin(pq, weights) {
+  var i = 0,
+      j = 0,
+      m = weights[pq[0]];
 
-console.time('time');
-// Starting node
-var s = Object.keys(list).map(Number).shift();
-// Number of vertices
-var n = Object.keys(list).map(Number).pop();
-// vertices processed so far
-var x = new Array(n);
-// computed shortest path distances
-var a = {};
-
-a[s] = 0;
-
-// current vertex
-var i = s;
-
-// (n-1) iterations (terminate when all vertices processed)
-while (i <= n) {
-  list[i].forEach(function(pair, indx) {
-      var foo = a[pair[0]];
-      var bar = (!!a[i] ? a[i] : 0) + list[i][indx][1];
-      a[pair[0]] = foo <= bar ? foo : bar;
-  });
-  i++;
+  while (j < pq.length) {
+    if (weights[pq[j]] < m) {
+        i = j;
+        m = weights[pq[j]];
+    }
+    j++;
+  }
+    
+  res = pq[i];
+  pq[i] = pq[pq.length-1];
+  pq = pq.slice(0,-1);
+  return {
+    v: res,
+    heap: pq
+  }
 }
 
-console.timeEnd('time');
-console.log(a[7] + ',' + a[37] + ',' + a[59] + ',' + a[82] + ',' + a[99] + ',' + a[115] + ',' + a[133] + ',' + a[165] + ',' + a[188] + ',' + a[197]);
+function dijkstra(graph, s) {
+  var n = Object.keys(graph).map(Number).pop();
+  var weights = {};
+  weights[s] = 0;
 
+  var visited = new Array(n);
 
+  var heap = Array.apply(null, Array(n-1)).map(function (_, i) {return i;});
+  var v;
+
+  while (heap.length > 0) {
+    var tmp = extractMin(heap, weights);
+    v = tmp.v;
+    heap = tmp.heap;
+    visited[v] = true;
+
+    graph[v].forEach(function(edge) {
+      if (!visited[edge[0]]) {
+        weights[edge[0]] = Math.min(weights[edge[0]], parseInt(weights[v]) + parseInt(edge[1]));
+        console.log(weights);
+      }
+    });
+  }
+
+  return weights;
+}
+
+console.log(dijkstra(list, 0));
 
 
 
