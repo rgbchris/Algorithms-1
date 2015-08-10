@@ -27,46 +27,77 @@
 
 var fs = require('fs');
 
-var list = {};
-fs.readFileSync('./dijkstraData.txt').toString().split('\n').map(function(str) {
+var list = fs.readFileSync('./dijkstraData.txt').toString().split('\n').map(function(str) {
   if (!str) return;
-  var key = str.split('\t')[0];
-  list[key] = str.split('\t').splice(1).map(function(str, indx, arr) { 
+  return str.split('\t').splice(1).map(function(str, indx, arr) { 
     if (indx === arr.length-1) return;
     return str.split(',').map(Number);
   }).filter(Boolean);
 });
 
+function extractMin(pq, dist) {
+    var i = 0,
+        j = 1,
+        m = dist[pq[0]];
 
-console.time('time');
-// Starting node
-var s = Object.keys(list).map(Number).shift();
-// Number of vertices
-var n = Object.keys(list).map(Number).pop();
-// vertices processed so far
-var x = new Array(n);
-// computed shortest path distances
-var a = {};
+    while (j < pq.length) {
+        if (dist[pq[j]] < m) {
+            i = j;
+            m = dist[pq[j]];
+        }
+        j++;
+    }
 
-a[s] = 0;
+    var res = pq[i];
 
-// current vertex
-var i = s;
+    pq[i] = pq[pq.length - 1];
+    pq.splice(-1);
 
-// (n-1) iterations (terminate when all vertices processed)
-while (i <= n) {
-  list[i].forEach(function(pair, indx) {
-      var foo = a[pair[0]];
-      var bar = (!!a[i] ? a[i] : 0) + list[i][indx][1];
-      a[pair[0]] = foo <= bar ? foo : bar;
-  });
-  i++;
+    return res;
+
 }
 
-console.timeEnd('time');
-console.log(a[7] + ',' + a[37] + ',' + a[59] + ',' + a[82] + ',' + a[99] + ',' + a[115] + ',' + a[133] + ',' + a[165] + ',' + a[188] + ',' + a[197]);
+function dijkstra(graph, s) {
+    var n = graph.length;
+    var distances = [];
+    var l = n;
+    while(l--) distances.push(1000000);
+    distances[s] = 0;
+    var visited = new Array(n);
 
+    // Unvisited Heap
+    var unvisited = Array.apply(null, Array(n-1)).map(function (_, i) { return i });
 
+    while (unvisited.length > 0) {
+        s = extractMin(unvisited, distances);
+        visited[s] = true;
 
+        // check all neighbors to current node
+        graph[s].forEach(function(pair, indx) {
+            var v   = pair[0] - 1;
+            var len = pair[1];
+            var alt = distances[s] + len;
 
+            if (alt < distances[v]) {
+                distances[parseInt(v)] = parseInt(alt);
+            }
+        });
+    }
 
+    return distances;
+}
+
+var weights = dijkstra(list, 0);
+
+console.log(
+    weights[6]   + ',' + 
+    weights[36]  + ',' + 
+    weights[58]  + ',' + 
+    weights[81]  + ',' + 
+    weights[98]  + ',' + 
+    weights[114] + ',' + 
+    weights[132] + ',' + 
+    weights[164] + ',' + 
+    weights[187] + ',' + 
+    weights[196]
+);
