@@ -13,10 +13,13 @@
 // implementations of the algorithm.
 
 var fs = require('fs');
-var list = fs.readFileSync('./Median.txt').toString().split('\n').map(Number).filter(Boolean);
+var list = fs.readFileSync('./test4.txt').toString().split('\n').map(Number).filter(Boolean);
+var MinHeap = require('./minHeap');
+var MaxHeap = require('./maxHeap');
 
-var minHeap = [];
-var maxHeap = [];
+var minHeap = new MinHeap();
+var maxHeap = new MaxHeap();
+var medians = [];
 
 list.forEach(function(k, i) {
   // second pass
@@ -25,40 +28,58 @@ list.forEach(function(k, i) {
   // first pass
   if (i === 0) {
     if (k < list[(i+1)]) {
-      maxHeap.push(k);
-      minHeap.push(list[(i+1)])
+      maxHeap.insert(k);
+      minHeap.insert(list[(i+1)])
     } else {
-      maxHeap.push(list[(i+1)])
-      minHeap.push(k);
+      maxHeap.insert(list[(i+1)])
+      minHeap.insert(k);
     }
-  }
-
-  if (k < maxHeap[0]) {
-    maxHeap.push(k);
   } else {
-    minHeap.push(k);
+    if (k < maxHeap.content[0]) {
+      maxHeap.insert(k);
+    } else {
+      minHeap.insert(k);
+    }
+
+    checkBalance();
+    medians.push(getMedian());
   }
 
-  // odd
-  // if (k % 2 > 0) {
-  // // even
-  // } else {
-  // }
+  console.log(minHeap.content, maxHeap.content);
+
 });
 
-function balance() {
+var result = medians.reduce(function(prev, cur, index, array) {
+    return prev + cur;
+});
+
+console.log(result % 20);
+
+function checkBalance() {
+  // If heaps are equal return
+  if (minHeap.content.length === maxHeap.content.length) return;
+
+  // Is any heap more than one node larger than the other?
+  if (Math.abs(minHeap.content.length - maxHeap.content.length) > 1) {
+    // Check which heap is larger and transfer
+    if (minHeap.content.length > maxHeap.content.length) {
+        maxHeap.insert(minHeap.extractMin());
+    } else {
+        minHeap.insert(maxHeap.extractMax());
+    }
+  }
 }
 
 function getMedian() {
   // If even calculate median and return
-  if (minHeap.length === maxHeap.length) {
-    return (maxHeap[0] + minHeap[0]) / 2
+  if (minHeap.content.length === maxHeap.content.length) {
+    return (maxHeap.content[0] + minHeap.content[0]) / 2;
   } else {
     // else take root of tree with more values
-    if (minHeap.length > maxHeap.length) {
-      return minHeap[0];
+    if (minHeap.content.length > maxHeap.content.length) {
+      return minHeap.content[0];
     } else {
-      return maxHeap[0];
+      return maxHeap.content[0];
     }
   }
 }
