@@ -13,23 +13,21 @@
 // implementations of the algorithm.
 
 var fs = require('fs');
-// test4.txt // => 5
-// "test10.txt"  = 4629, I got -5371
-// "test100.txt" = 6138, I got 7213 
-// "test1000.txt" = 8687, I got 1778 
-// "test10000.txt" = 6283, I got -4101
-var list = fs.readFileSync('./test100.txt').toString().split('\n').map(Number).filter(Boolean);
-var MinHeap = require('./minHeap');
-var MaxHeap = require('./maxHeap');
+var list = fs.readFileSync('./Median.txt').toString().split('\n').map(Number).filter(Boolean);
+var Heap = require('./Heap');
 
-var minHeap = new MinHeap();
-var maxHeap = new MaxHeap();
+var minHeap = new Heap([], 'min');
+var maxHeap = new Heap([], 'max');
 var medians = [];
 
 list.forEach(function(k, i) {
   // second pass
   if (i === 1) {
-    medians.push(k);
+    if (k < list[i-1]) {
+      medians.push(k);
+    } else {
+      medians.push(list[i-1]);
+    }
     return;
   }
 
@@ -59,7 +57,7 @@ var result = medians.reduce(function(prev, cur, index, array) {
     return prev + cur;
 });
 
-console.log(list.length);
+//console.log(medians);
 console.log(result, result % 10000);
 
 function checkBalance() {
@@ -70,9 +68,9 @@ function checkBalance() {
   if (Math.abs(minHeap.content.length - maxHeap.content.length) > 1) {
     // Check which heap is larger and transfer
     if (minHeap.content.length > maxHeap.content.length) {
-        maxHeap.insert(minHeap.extractMin());
+        maxHeap.insert(minHeap.extract());
     } else {
-        minHeap.insert(maxHeap.extractMax());
+        minHeap.insert(maxHeap.extract());
     }
   }
 }
@@ -80,7 +78,7 @@ function checkBalance() {
 function getMedian(i) {
   // If even calculate median and return
   if (minHeap.content.length === maxHeap.content.length) {
-     return maxHeap.content[0];
+     return (i % 2 > 0) ? maxHeap.content[0] : minHeap.content[0];
     // return (maxHeap.content[0] + minHeap.content[0]) / 2;
   } else {
     // else take root of tree with more values
@@ -91,25 +89,3 @@ function getMedian(i) {
     }
   }
 }
-
-/*
-function getMedian(i) {
-  // If even calculate median and return
-  if (minHeap.content.length === maxHeap.content.length) {
-    if (i % 2 > 0) {
-      return minHeap.content[0];
-    } else {
-      return maxHeap.content[0];
-    }
-    // return (maxHeap.content[0] + minHeap.content[0]) / 2;
-  } else {
-    // else take root of tree with more values
-    if (minHeap.content.length > maxHeap.content.length) {
-      return minHeap.content[0];
-    } else {
-      return maxHeap.content[0];
-    }
-  }
-}
-*/
-
