@@ -23,6 +23,15 @@ MinHeap.prototype = {
             this.content[i2] = tmp;
         };
 
+        if (this.content.length === 2) {
+            if (this.content[0] < this.content[1]) {
+                return;
+            } else {
+                swap.call(this, 0, 1);
+                return;
+            }
+        }
+
         var getParentIndx = function(i) {
             var indx;
             // odd
@@ -48,7 +57,7 @@ MinHeap.prototype = {
         // start at parent and see how far up the tree the
         // heap property is undone
         parentNodeIndices.reverse().forEach(function(indx) {
-            if (this.content[i] < this.content[indx] && !stop) {
+            if (this.content[i] < this.content[indx] && stop === undefined) {
                 stop = indx;
             }
         }, this);
@@ -56,7 +65,7 @@ MinHeap.prototype = {
         var last;
         // start swapping to restore heap property
         parentNodeIndices.reverse().forEach(function(indx, currentItr) {
-            if (indx < stop) return;
+            if (indx < stop || stop === undefined) return;
             if (currentItr === 0) {
                 swap.call(this, i, indx);
             } else {
@@ -71,24 +80,22 @@ MinHeap.prototype = {
         // Delete root
         this.content.splice(0,1);
 
-        if (this.content.length === 2) {
-            if (this.content[0] < this.content[1]) {
-                return;
-            } else {
-                swap(0, 1);
-                return;
-            }
-        }
-        // Make last leaf new root
-        this.content.unshift(this.content.splice(-1)[0])
-
-        // var indx, i = this.content.length-1;
-
         var swap = function(i1, i2) {
             var tmp = this.content[i1];
             this.content[i1] = this.content[i2];
             this.content[i2] = tmp;
         };
+
+        if (this.content.length === 2) {
+            if (this.content[0] < this.content[1]) {
+                return;
+            } else {
+                swap.call(this, 0, 1);
+                return;
+            }
+        }
+        // Make last leaf new root
+        this.content.unshift(this.content.splice(-1)[0])
 
         var indx = 0;
         var lvl = 0;
